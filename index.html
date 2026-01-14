@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>The Coffee Bar - Menu</title>
+    <link rel="icon" type="image/png" href="logo.png" />
     <style>
       * {
         box-sizing: border-box;
@@ -192,12 +193,10 @@
         const container = document.getElementById("container");
         const images = document.querySelectorAll(".menu-image");
 
-        // Wait for all images to load
         let imagesLoaded = 0;
         const totalImages = images.length;
 
         if (totalImages === 0) {
-          // If no images, just hide loading screen
           setTimeout(() => {
             loadingScreen.classList.add("hidden");
             container.classList.add("loaded");
