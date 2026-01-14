@@ -190,11 +190,12 @@
         const menuImages = [];
         let menuNumber = 1;
         let imagesLoaded = 0;
-        let shouldContinue = true;
+        let consecutiveFailures = 0;
+        const MAX_CONSECUTIVE_FAILURES = 5;
         let checkingComplete = false;
 
         function tryLoadMenuImage(menuNum) {
-          if (!shouldContinue || checkingComplete) return;
+          if (checkingComplete) return;
 
           const img = new Image();
           img.src = `menu-${menuNum}.jpg`;
@@ -206,6 +207,7 @@
             container.appendChild(img);
             menuImages.push(img);
             imagesLoaded++;
+            consecutiveFailures = 0; // Reset failure counter
 
             // Try loading the next menu image
             menuNumber++;
@@ -214,16 +216,22 @@
           });
 
           img.addEventListener("error", () => {
-            shouldContinue = false;
-            checkAllLoaded();
+            consecutiveFailures++;
+
+            // If we've had too many consecutive failures, assume we're done
+            if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+              checkingComplete = true;
+              checkAllLoaded();
+            } else {
+              // Continue searching for the next menu image
+              menuNumber++;
+              tryLoadMenuImage(menuNumber);
+            }
           });
         }
 
         function checkAllLoaded() {
-          if (checkingComplete) return;
-
-          if (!shouldContinue && imagesLoaded === menuImages.length) {
-            checkingComplete = true;
+          if (checkingComplete && imagesLoaded === menuImages.length) {
             setTimeout(() => {
               loadingScreen.classList.add("hidden");
               container.classList.add("loaded");
@@ -233,9 +241,9 @@
 
         tryLoadMenuImage(menuNumber);
 
+        // Fallback: if no images are found after a timeout
         setTimeout(() => {
-          if (menuImages.length === 0 && shouldContinue) {
-            shouldContinue = false;
+          if (menuImages.length === 0 && !checkingComplete) {
             checkingComplete = true;
             loadingScreen.classList.add("hidden");
             container.classList.add("loaded");
