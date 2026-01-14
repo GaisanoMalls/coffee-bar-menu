@@ -180,53 +180,67 @@
     </div>
 
     <div class="container" id="container">
-      <img src="menu-1.jpg" alt="Menu 1" class="menu-image" />
-      <img src="menu-2.jpg" alt="Menu 2" class="menu-image" />
-      <img src="menu-3.jpg" alt="Menu 3" class="menu-image" />
-      <img src="menu-4.jpg" alt="Menu 4" class="menu-image" />
-      <img src="menu-5.jpg" alt="Menu 5" class="menu-image" />
+      <!-- Menu images -->
     </div>
 
     <script>
       window.addEventListener("load", function () {
         const loadingScreen = document.getElementById("loadingScreen");
         const container = document.getElementById("container");
-        const images = document.querySelectorAll(".menu-image");
-
+        const menuImages = [];
+        let menuNumber = 1;
         let imagesLoaded = 0;
-        const totalImages = images.length;
+        let shouldContinue = true;
+        let checkingComplete = false;
 
-        if (totalImages === 0) {
-          setTimeout(() => {
-            loadingScreen.classList.add("hidden");
-            container.classList.add("loaded");
-          }, 500);
-        } else {
-          images.forEach((img) => {
-            if (img.complete) {
-              imagesLoaded++;
-              checkAllLoaded();
-            } else {
-              img.addEventListener("load", () => {
-                imagesLoaded++;
-                checkAllLoaded();
-              });
-              img.addEventListener("error", () => {
-                imagesLoaded++;
-                checkAllLoaded();
-              });
-            }
+        function tryLoadMenuImage(menuNum) {
+          if (!shouldContinue || checkingComplete) return;
+
+          const img = new Image();
+          img.src = `menu-${menuNum}.jpg`;
+          img.alt = `Menu ${menuNum}`;
+          img.className = "menu-image";
+
+          img.addEventListener("load", () => {
+            // Image exists and is loaded, add it to the DOM
+            container.appendChild(img);
+            menuImages.push(img);
+            imagesLoaded++;
+
+            // Try loading the next menu image
+            menuNumber++;
+            tryLoadMenuImage(menuNumber);
+            checkAllLoaded();
+          });
+
+          img.addEventListener("error", () => {
+            shouldContinue = false;
+            checkAllLoaded();
           });
         }
 
         function checkAllLoaded() {
-          if (imagesLoaded === totalImages) {
+          if (checkingComplete) return;
+
+          if (!shouldContinue && imagesLoaded === menuImages.length) {
+            checkingComplete = true;
             setTimeout(() => {
               loadingScreen.classList.add("hidden");
               container.classList.add("loaded");
             }, 500);
           }
         }
+
+        tryLoadMenuImage(menuNumber);
+
+        setTimeout(() => {
+          if (menuImages.length === 0 && shouldContinue) {
+            shouldContinue = false;
+            checkingComplete = true;
+            loadingScreen.classList.add("hidden");
+            container.classList.add("loaded");
+          }
+        }, 3000);
       });
     </script>
   </body>
